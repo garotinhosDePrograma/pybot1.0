@@ -5,7 +5,7 @@ def salvar_interacao(usuario_id: int, pergunta: str, resposta: str):
     conn = get_connection
     cursor = conn.cursor()
     cursor.execute(
-        "insert into logs (usuario_id, perginta, resposta, criado_em) values (%s, %s, %s, %s)",
+        "insert into logs (usuario_id, pergunta, resposta, criado_em) values (%s, %s, %s, %s)",
         (usuario_id, pergunta, resposta, datetime.datetime.now())
     )
     conn.commit()
