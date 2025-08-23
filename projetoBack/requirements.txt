@@ -1,0 +1,10 @@
+Flask
+mysql-connector-python
+python-dotenv
+wikipedia
+requests
+langdetect
+deep-translator
+spacy
+scikit-learn
+cachetools
