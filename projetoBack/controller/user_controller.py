@@ -1,54 +1,62 @@
 from flask import Blueprint, request, jsonify
-from repository.user_repository import create_user, get_user_by_email, get_all_users
-from utils.auth import generate_token, token_required
-from utils.security import verify_password
+from repository import user_repository
 
-user_bp = Blueprint("users", __name__)
+user_bp = Blueprint("user", __name__)
 
-@user_bp.route("/register", methods=["POST"])
-def register():
+@user_bp.route("/", methods=["POST"])
+def criar_usuario():
     data = request.get_json()
     nome = data.get("nome")
     email = data.get("email")
-    senha = data.get("senha")
+    senha_hash = data.get("senha") 
 
-    if not nome or not email or not senha:
-        return jsonify({"error": "Campos obrigatórios não preenchidos"}), 400
+    if not nome or not email or not senha_hash:
+        return jsonify({"erro": "Nome, email e senha são obrigatórios"}), 400
 
-    user = create_user(nome, email, senha)
-    if not user:
-        return jsonify({"error": "Email já cadastrado"}), 409
+    try:
+        usuario_id = user_repository.create_usuario(nome, email, senha_hash)
+        return jsonify({"mensagem": "Usuário criado com sucesso", "id": usuario_id}), 201
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
 
-    return jsonify({"message": "Usuário registrado com sucesso"}), 201
+@user_bp.route("/<int:usuario_id>", methods=["GET"])
+def buscar_usuario(usuario_id):
+    usuario = user_repository.find_by_id(usuario_id)
+    if usuario:
+        return jsonify(usuario), 200
+    return jsonify({"erro": "Usuário não encontrado"}), 404
 
-
-@user_bp.route("/login", methods=["POST"])
-def login():
+@user_bp.route("/<int:usuario_id>", methods=["PUT"])
+def atualizar_usuario(usuario_id):
     data = request.get_json()
+    nome = data.get("nome")
     email = data.get("email")
-    senha = data.get("senha")
 
-    user = get_user_by_email(email)
-    if not user or not verify_password(senha, user["senha"]):
-        return jsonify({"error": "Credenciais inválidas"}), 401
+    if not nome and not email:
+        return jsonify({"erro": "Nada para atualizar"}), 400
 
-    token = generate_token(user["id"], user["role"])
-    return jsonify({"token": token})
+    ok = user_repository.update_usuario(usuario_id, nome, email)
+    if ok:
+        return jsonify({"mensagem": "Usuário atualizado com sucesso"}), 200
+    return jsonify({"erro": "Falha ao atualizar usuário"}), 500
 
+@user_bp.route("/<int:usuario_id>", methods=["DELETE"])
+def deletar_usuario(usuario_id):
+    ok = user_repository.delete_usuario(usuario_id)
+    if ok:
+        return jsonify({"mensagem": "Usuário deletado com sucesso"}), 200
+    return jsonify({"erro": "Falha ao deletar usuário"}), 500
 
-@user_bp.route("/users", methods=["GET"])
-@token_required(role="admin")
-def list_users():
-    users = get_all_users()
-    result = [
-        {
-            "email": u["email"],
-            "criado_em": u["criado_em"],
-            "status": u["status"],
-            "role": u["role"]
-        }
-        for u in users
-    ]
-    return jsonify(result)
-
+@user_bp.route("/", methods=["GET"])
+def listar_usuarios():
+    try:
+        conn = user_repository.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, nome, email, criado_em FROM usuarios")
+        usuarios = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return jsonify(usuarios), 200
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
 
