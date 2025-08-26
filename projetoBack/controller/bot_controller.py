@@ -1,28 +1,26 @@
-from flask import Blueprint, request, jsonify
-from repository import log_repository
+from flask import request, jsonify
+from repository import bot_repository
 
-log_bp = Blueprint("log", __name__)
-
-@log_bp.route("/", methods=["POST"])
-def salvar_interacao():
+def salvar_log():
     data = request.get_json()
-    usuario_id = data.get("usuario_id")
-    pergunta = data.get("pergunta")
-    resposta = data.get("resposta")
+    if not data or not data.get("usuario_id") or not data.get("pergunta") or not data.get("resposta"):
+        return jsonify({"error": "Campos obrigatórios faltando"}), 400
 
-    if not usuario_id or not pergunta or not resposta:
-        return jsonify({"erro": "usuario_id, pergunta e resposta são obrigatórios"}), 400
+    try:
+        bot_repository.salvar_interacao(
+            data["usuario_id"],
+            data["pergunta"],
+            data["resposta"]
+        )
+        return jsonify({"message": "Interação salva com sucesso"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    ok = log_repository.salvar_interacao(usuario_id, pergunta, resposta)
-    if ok:
-        return jsonify({"mensagem": "Log salvo com sucesso"}), 201
-    return jsonify({"erro": "Erro ao salvar log"}), 500
-
-
-@log_bp.route("/<int:usuario_id>", methods=["GET"])
-def buscar_logs(usuario_id):
-    limite = request.args.get("limite", 10, type=int)
-    logs = log_repository.buscar_logs(usuario_id, limite)
-    return jsonify(logs), 200
-
+def buscar_logs(usuario_id: int):
+    limite = request.args.get("limite", default=10, type=int)
+    try:
+        logs = bot_repository.buscar_logs(usuario_id, limite)
+        return jsonify(logs), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
