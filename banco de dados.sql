@@ -20,3 +20,7 @@ create table if not exists logs (
 );
 
 create index idx_logs_usuarios_id on logs(usuario_id);
+
+insert into usuarios (nome, email, senha, criado_em)
+values
+('user', 'user@gmail.com', 'b7e94be513e96e8c45cd23d162275e5a12ebde9100a425c4ebcdd7fa4dcd897c', current_timestamp)
