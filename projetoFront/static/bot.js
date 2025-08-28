@@ -1,4 +1,3 @@
-// frontend/js/bot.js
 const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
 const sendButton = document.getElementById('sendButton');
@@ -6,21 +5,17 @@ const typingIndicator = document.getElementById('typingIndicator');
 const historySidebar = document.getElementById('historySidebar');
 const chatHistoryList = document.getElementById('chatHistoryList');
 
-// Gerar ID único para sessões de chat
 function generateChatId() {
     return 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
-// Carregar mensagens do localStorage ou backend
 function loadMessages(chatId = null) {
     chatMessages.innerHTML = '<div class="welcome-message">👋 Olá! Sou o PyBot, seu assistente inteligente. Como posso ajudá-lo hoje?</div>';
     const token = localStorage.getItem('token');
     
     if (token && !chatId) {
-        // Usuário autenticado: recuperar logs do backend
         fetchUserLogs();
     } else {
-        // Usuário não autenticado ou carregando chat específico
         const allChats = JSON.parse(localStorage.getItem('chatSessions') || '{}');
         const messages = chatId ? allChats[chatId] || [] : [];
         messages.forEach(msg => addMessage(msg.content, msg.sender));
@@ -28,7 +23,6 @@ function loadMessages(chatId = null) {
     updateChatHistory();
 }
 
-// Recuperar logs do backend para usuário autenticado
 async function fetchUserLogs() {
     const token = localStorage.getItem('token');
     try {
@@ -43,7 +37,6 @@ async function fetchUserLogs() {
         });
         const data = await response.json();
         if (response.ok) {
-            // Organizar logs por sessão (usando criado_em como agrupador)
             const sessions = {};
             data.forEach(log => {
                 const sessionId = log.criado_em.split('T')[0]; // Agrupar por data
@@ -52,7 +45,7 @@ async function fetchUserLogs() {
                 sessions[sessionId].push({ content: log.resposta, sender: 'bot' });
             });
             localStorage.setItem('chatSessions', JSON.stringify(sessions));
-            loadMessages(); // Carregar a última sessão ou nenhuma
+            loadMessages();
         } else {
             console.error('Erro ao carregar logs:', data.error);
         }
@@ -61,7 +54,6 @@ async function fetchUserLogs() {
     }
 }
 
-// Salvar mensagem no localStorage para usuários não autenticados
 function saveMessage(content, sender) {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -69,7 +61,6 @@ function saveMessage(content, sender) {
         const currentChatId = localStorage.getItem('currentChatId') || generateChatId();
         if (!allChats[currentChatId]) allChats[currentChatId] = [];
         allChats[currentChatId].push({ content, sender, timestamp: new Date().toISOString() });
-        // Limitar a 50 mensagens por chat
         if (allChats[currentChatId].length > 50) {
             allChats[currentChatId] = allChats[currentChatId].slice(-50);
         }
@@ -79,7 +70,6 @@ function saveMessage(content, sender) {
     }
 }
 
-// Atualizar lista de histórico
 function updateChatHistory() {
     chatHistoryList.innerHTML = '';
     const token = localStorage.getItem('token');
@@ -93,13 +83,12 @@ function updateChatHistory() {
 
     Object.keys(sessions).forEach(sessionId => {
         const li = document.createElement('li');
-        li.textContent = `Chat ${sessionId.split('_')[1] || sessionId}`; // Mostrar data ou ID
+        li.textContent = `Chat ${sessionId.split('_')[1] || sessionId}`;
         li.onclick = () => loadMessages(sessionId);
         chatHistoryList.appendChild(li);
     });
 }
 
-// Iniciar novo chat
 function newChat() {
     chatMessages.innerHTML = '<div class="welcome-message">👋 Olá! Sou o PyBot, seu assistente inteligente. Como posso ajudá-lo hoje?</div>';
     const token = localStorage.getItem('token');
@@ -111,18 +100,15 @@ function newChat() {
     updateChatHistory();
 }
 
-// Alternar visibilidade do histórico
 function toggleHistory() {
     historySidebar.style.display = historySidebar.style.display === 'none' ? 'block' : 'none';
 }
 
-// Auto-resize textarea
 chatInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 120) + 'px';
 });
 
-// Send message on Enter (but allow Shift+Enter for new line)
 chatInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -130,18 +116,15 @@ chatInput.addEventListener('keydown', function(e) {
     }
 });
 
-// Send message to backend
 async function sendMessage() {
     const message = chatInput.value.trim();
     if (!message) return;
 
-    // Add user message
     addMessage(message, 'user');
     saveMessage(message, 'user');
     chatInput.value = '';
     chatInput.style.height = 'auto';
 
-    // Show typing indicator
     showTypingIndicator();
 
     try {
@@ -161,7 +144,6 @@ async function sendMessage() {
 
         const data = await response.json();
 
-        // Hide typing indicator
         hideTypingIndicator();
 
         if (response.ok && data.status === 'success') {
@@ -206,7 +188,6 @@ function addMessage(content, sender) {
     
     messageDiv.appendChild(messageContent);
 
-    // Remove welcome message if it exists
     const welcomeMessage = chatMessages.querySelector('.welcome-message');
     if (welcomeMessage) {
         welcomeMessage.remove();
@@ -234,9 +215,9 @@ function logout() {
     }
 }
 
-// Carregar mensagens e configurar eventos ao iniciar
 document.addEventListener('DOMContentLoaded', function() {
     chatInput.focus();
     sendButton.addEventListener('click', sendMessage);
     loadMessages();
+
 });
