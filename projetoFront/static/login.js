@@ -19,15 +19,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
 
             if (response.ok) {
-                alert("✅ Login realizado com sucesso!");
+                alert("Login realizado com sucesso!");
                 localStorage.setItem("token", data.token);
                 window.location.href = "bot.html";
             } else {
-                alert("❌ Erro: " + (data.error || "Falha no login"));
+                alert("Erro: " + (data.error || "Falha no login"));
             }
         } catch (error) {
             alert("Erro de conexão com o servidor");
             console.error(error);
         }
     });
+
 });
