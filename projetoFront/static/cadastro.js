@@ -20,14 +20,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
 
             if (response.ok) {
-                alert("✅ Cadastro realizado com sucesso!");
+                alert("Cadastro realizado com sucesso!");
                 window.location.href = "index.html";
             } else {
-                alert("❌ Erro: " + (data.error || "Falha no cadastro"));
+                alert("Erro: " + (data.error || "Falha no cadastro"));
             }
         } catch (error) {
             alert("Erro de conexão com o servidor");
             console.error(error);
         }
     });
+
 });
