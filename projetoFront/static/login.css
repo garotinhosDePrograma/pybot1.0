@@ -10,6 +10,8 @@
 body{
     background-color: #1e1e1e;
     background: linear-gradient(to right, #0066ff, #4233a5);
+    background: url("PYBOT2.0.png") no-repeat center center;
+    background-size: cover;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -47,7 +49,7 @@ body{
 }
 
 .container button{
-    background-color: #0044ff;
+    background-color: #2a1f55;
     color: #fff;
     font-size: 12px;
     padding: 10px 45px;
@@ -163,7 +165,7 @@ body{
 .toggle{
     background-color: #512da8;
     height: 100%;
-    background: linear-gradient(to right, #0066ff, #361bd3);
+    background: linear-gradient(to right, #1a1633, #2a1f55);
     color: #fff;
     position: relative;
     left: -100%;
