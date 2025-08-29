@@ -20,7 +20,7 @@ def docs():
         'endpoints': [
             {'path': '/api/cadastro', 'method': 'POST', 'description': 'Cadastra um novo usuário', 'body': {'nome': 'string', 'email': 'string', 'senha': 'string'}, 'response': {'status': 'success', 'token': 'string', 'timestamp': 'string'}},
             {'path': '/api/login', 'method': 'POST', 'description': 'Autentica um usuário', 'body': {'email': 'string', 'senha': 'string'}, 'response': {'status': 'success', 'token': 'string', 'timestamp': 'string'}},
-            {'path': '/api/query', 'method': 'POST', 'description': 'Insere uma pergunta/resposta', 'body': {'query': 'string'}, 'headers': {'Authorization': 'Bearer <token> (opcional)'}, 'response': {'status': 'success', 'response': 'string', 'timestamp': 'string'}},
+            {'path': '/api/query', 'method': 'POST', 'description': 'Insere uma pergunta/resposta', 'body': {'query': 'string'}, 'headers': {'Authorization': 'Bearer <token> (opcional)'}, 'response': {'status': 'success', 'response': 'string', 'source': 'string', 'timestamp': 'string', 'processing_time': 'float'}},
             {'path': '/api/users', 'method': 'GET', 'description': 'Lista todos os usuários', 'response': {'status': 'success', 'total': 'int', 'data': 'array', 'timestamp': 'string'}},
             {'path': '/api/users/<user_id>', 'method': 'GET', 'description': 'Busca usuário por ID', 'response': {'status': 'success', 'data': 'object', 'timestamp': 'string'}},
             {'path': '/api/logs', 'method': 'GET', 'description': 'Lista todos os logs', 'response': {'status': 'success', 'total': 'int', 'data': 'array', 'timestamp': 'string'}},
@@ -29,3 +29,6 @@ def docs():
         'timestamp': datetime.utcnow().isoformat()
     })
 
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
