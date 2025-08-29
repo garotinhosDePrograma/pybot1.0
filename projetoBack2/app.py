@@ -9,7 +9,6 @@ import json
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# Configurar provedor JSON personalizado para indentação
 class CustomJSONProvider(app.json_provider_class):
     def dumps(self, obj, **kwargs):
         return json.dumps(obj, ensure_ascii=False, indent=2, sort_keys=True)
@@ -22,7 +21,7 @@ app.json = CustomJSONProvider(app)
 app.register_blueprint(bot_bp, url_prefix='/api')
 app.register_blueprint(user_bp, url_prefix='/api')
 
-@app.route('/api/docs', methods=['GET'])
+@app.route('/', methods=['GET'])
 def docs():
     return jsonify({
         'status': 'success',
@@ -37,3 +36,4 @@ def docs():
         ],
         'timestamp': datetime.utcnow().isoformat()
     })
+
