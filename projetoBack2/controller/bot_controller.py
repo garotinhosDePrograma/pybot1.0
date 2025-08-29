@@ -13,7 +13,7 @@ def query():
     data = request.get_json()
     query = data.get('query')
     if not query:
-        return jsonify({'status': 'error', 'message': 'Query não fornecida'}), 400
+        return jsonify({'status': 'error', 'message': 'Query não fornecida'}, indent=2), 400
 
     auth_header = request.headers.get('Authorization')
     user_id = 'anonymous'
@@ -26,17 +26,15 @@ def query():
             pass
 
     result = bot_worker.process_query(query, user_id)
-    
     if result['status'] == 'success':
         save_log(user_id, query, result['response'])
-
     return jsonify({
         'status': result['status'],
         'response': result['response'],
         'source': result.get('source', 'nenhuma'),
         'timestamp': datetime.utcnow().isoformat(),
         'processing_time': result.get('processing_time', 0)
-    })
+    }, indent=2)
 
 @bot_bp.route('/logs/<user_id>', methods=['GET'])
 def get_logs(user_id):
@@ -47,7 +45,7 @@ def get_logs(user_id):
         'total': len(logs),
         'data': logs,
         'timestamp': datetime.utcnow().isoformat()
-    })
+    }, indent=2)
 
 @bot_bp.route('/logs', methods=['GET'])
 def get_all_logs_route():
@@ -57,4 +55,4 @@ def get_all_logs_route():
         'total': len(logs),
         'data': logs,
         'timestamp': datetime.utcnow().isoformat()
-    })
+    }, indent=2)
