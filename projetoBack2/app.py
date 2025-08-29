@@ -21,7 +21,7 @@ app.json = CustomJSONProvider(app)
 app.register_blueprint(bot_bp, url_prefix='/api')
 app.register_blueprint(user_bp, url_prefix='/api')
 
-@app.route('/api/docs', methods=['GET'])
+@app.route('/', methods=['GET'])
 def docs():
     return jsonify({
         'status': 'success',
@@ -36,5 +36,6 @@ def docs():
         ],
         'timestamp': datetime.utcnow().isoformat()
     })
+
 
 
