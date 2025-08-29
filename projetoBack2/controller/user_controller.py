@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+ from flask import Blueprint, request, jsonify
 from repository.user_repository import save_user, get_user_by_email, get_all_users, get_user_by_id
 from datetime import datetime
 import jwt
@@ -14,12 +14,16 @@ def cadastro():
     email = data.get('email')
     senha = data.get('senha')
     if not all([nome, email, senha]):
-        return jsonify({'status': 'error', 'message': 'Campos obrigatórios'}), 400
+        return jsonify({'status': 'error', 'message': 'Campos obrigatórios'}, indent=2), 400
     if get_user_by_email(email):
-        return jsonify({'status': 'error', 'message': 'Email já cadastrado'}), 400
+        return jsonify({'status': 'error', 'message': 'Email já cadastrado'}, indent=2), 400
     user_id = save_user(nome, email, senha)
     token = jwt.encode({'user_id': user_id}, os.getenv('SECRET_KEY'), algorithm='HS256')
-    return jsonify({'status': 'success', 'token': token, 'timestamp': datetime.utcnow().isoformat()})
+    return jsonify({
+        'status': 'success',
+        'token': token,
+        'timestamp': datetime.utcnow().isoformat()
+    }, indent=2)
 
 @user_bp.route('/login', methods=['POST'])
 def login():
@@ -29,8 +33,12 @@ def login():
     user = get_user_by_email(email)
     if user and bcrypt.checkpw(senha.encode('utf-8'), user['senha'].encode('utf-8')):
         token = jwt.encode({'user_id': user['id']}, os.getenv('SECRET_KEY'), algorithm='HS256')
-        return jsonify({'status': 'success', 'token': token, 'timestamp': datetime.utcnow().isoformat()})
-    return jsonify({'status': 'error', 'message': 'Credenciais inválidas'}), 401
+        return jsonify({
+            'status': 'success',
+            'token': token,
+            'timestamp': datetime.utcnow().isoformat()
+        }, indent=2)
+    return jsonify({'status': 'error', 'message': 'Credenciais inválidas'}, indent=2), 401
 
 @user_bp.route('/users', methods=['GET'])
 def get_all_users_route():
@@ -40,7 +48,7 @@ def get_all_users_route():
         'total': len(users),
         'data': users,
         'timestamp': datetime.utcnow().isoformat()
-    })
+    }, indent=2)
 
 @user_bp.route('/users/<int:user_id>', methods=['GET'])
 def get_user_by_id_route(user_id):
@@ -50,5 +58,5 @@ def get_user_by_id_route(user_id):
             'status': 'success',
             'data': user,
             'timestamp': datetime.utcnow().isoformat()
-        })
-    return jsonify({'status': 'error', 'message': 'Usuário não encontrado'}), 404
+        }, indent=2)
+    return jsonify({'status': 'error', 'message': 'Usuário não encontrado'}, indent=2), 404
