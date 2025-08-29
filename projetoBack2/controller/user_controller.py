@@ -1,4 +1,4 @@
- from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from repository.user_repository import save_user, get_user_by_email, get_all_users, get_user_by_id
 from datetime import datetime
 import jwt
@@ -60,3 +60,4 @@ def get_user_by_id_route(user_id):
             'timestamp': datetime.utcnow().isoformat()
         }, indent=2)
     return jsonify({'status': 'error', 'message': 'Usuário não encontrado'}, indent=2), 404
+
