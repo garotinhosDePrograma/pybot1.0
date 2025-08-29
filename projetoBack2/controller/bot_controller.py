@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
 from repository.bot_repository import save_log, get_user_logs, get_all_logs
+from worker.bot_worker import BotWorker
 from datetime import datetime
 import os
 import jwt
 
 bot_bp = Blueprint('bot', __name__)
+bot_worker = BotWorker()
 
 @bot_bp.route('/query', methods=['POST'])
 def query():
@@ -12,7 +14,7 @@ def query():
     query = data.get('query')
     if not query:
         return jsonify({'status': 'error', 'message': 'Query não fornecida'}), 400
-    resposta = f"Resposta para: {query}"
+
     auth_header = request.headers.get('Authorization')
     user_id = 'anonymous'
     if auth_header and auth_header.startswith('Bearer '):
@@ -22,11 +24,18 @@ def query():
             user_id = decoded['user_id']
         except jwt.InvalidTokenError:
             pass
-    save_log(user_id, query, resposta)
+
+    result = bot_worker.process_query(query, user_id)
+    
+    if result['status'] == 'success':
+        save_log(user_id, query, result['response'])
+
     return jsonify({
-        'status': 'success',
-        'response': resposta,
-        'timestamp': datetime.utcnow().isoformat()
+        'status': result['status'],
+        'response': result['response'],
+        'source': result.get('source', 'nenhuma'),
+        'timestamp': datetime.utcnow().isoformat(),
+        'processing_time': result.get('processing_time', 0)
     })
 
 @bot_bp.route('/logs/<user_id>', methods=['GET'])
