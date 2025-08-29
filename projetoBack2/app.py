@@ -8,8 +8,6 @@ import os
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
-
 app.register_blueprint(bot_bp, url_prefix='/api')
 app.register_blueprint(user_bp, url_prefix='/api')
 
@@ -27,8 +25,4 @@ def docs():
             {'path': '/api/logs/<user_id>', 'method': 'GET', 'description': 'Lista logs de um usuário', 'query': {'limite': 'int (opcional)'}, 'response': {'status': 'success', 'total': 'int', 'data': 'array', 'timestamp': 'string'}}
         ],
         'timestamp': datetime.utcnow().isoformat()
-    })
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    }, indent=2)
