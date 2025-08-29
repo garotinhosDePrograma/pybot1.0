@@ -7,6 +7,9 @@ import os
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+
 app.register_blueprint(bot_bp, url_prefix='/api')
 app.register_blueprint(user_bp, url_prefix='/api')
 
@@ -25,3 +28,4 @@ def docs():
         ],
         'timestamp': datetime.utcnow().isoformat()
     })
+
