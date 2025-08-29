@@ -1,17 +1,25 @@
 [
     {
         "id": 1,
-        "nome": "Teste",
-        "email": "teste@example.com",
-        "senha": "$2b$12$exemplo_hash_senha_bcrypt",
+        "nome": "Luiz Fagner",
+        "email": "luiz@gmail.com",
+        "senha": "aaa",
         "criado_em": "2025-08-28T21:00:00.000000"
     },
 
     {
         "id": 2,
-        "nome": "Usuario2",
-        "email": "usuario2@gmail.com",
-        "senha": "$2b$12$exemplo_hash_senha_bcrypt2",
+        "nome": "Pedro Alcântara",
+        "email": "pedro@gmail.com",
+        "senha": "aaa",
         "criado_em": "2025-08-28T21:05:00"
+    },
+
+    {
+        "id": 3,
+        "nome": "Luiz Inácio Lula da Silva",
+        "email": "lula@hotmail.com.br",
+        "senha": "aaa",
+        "criado_em": '2025-08-28T21:05:00"
     }
 ]
