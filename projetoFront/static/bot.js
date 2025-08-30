@@ -226,7 +226,3 @@ document.addEventListener('DOMContentLoaded', function() {
     loadMessages();
 
 });
-
-
-
-
