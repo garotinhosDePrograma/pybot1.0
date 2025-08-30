@@ -10,7 +10,13 @@ function generateChatId() {
 }
 
 function loadMessages(chatId = null) {
-    chatMessages.innerHTML = '<div class="welcome-message">👋 Olá! Sou o PyBot, seu assistente inteligente. Como posso ajudá-lo hoje?</div>';
+    // Só exibir mensagem de boas-vindas se não houver chatId
+    if (!chatId) {
+        chatMessages.innerHTML = '<div class="welcome-message">👋 Olá! Sou o PyBot, seu assistente inteligente. Como posso ajudá-lo hoje?</div>';
+    } else {
+        chatMessages.innerHTML = ''; // Limpar mensagens apenas quando carregar um chat específico
+    }
+
     const token = localStorage.getItem('token');
     
     if (token && !chatId) {
@@ -39,7 +45,6 @@ async function fetchUserLogs() {
         if (response.ok && data.status === 'success') {
             const sessions = {};
             data.data.forEach(log => {
-                // Ajustar para usar created_at em vez de criado_em
                 const sessionId = log.created_at ? log.created_at.split('T')[0] : 'unknown_' + Date.now();
                 if (!sessions[sessionId]) sessions[sessionId] = [];
                 sessions[sessionId].push({ content: log.query, sender: 'user' });
@@ -47,7 +52,8 @@ async function fetchUserLogs() {
             });
             localStorage.setItem('chatSessions', JSON.stringify(sessions));
             console.log('Sessões salvas:', sessions); // Log para depuração
-            loadMessages();
+            // Não chamar loadMessages aqui para evitar loop
+            updateChatHistory();
         } else {
             console.error('Erro ao carregar logs:', data.message || data);
         }
@@ -92,7 +98,6 @@ function updateChatHistory() {
 
     Object.keys(sessions).forEach(sessionId => {
         const li = document.createElement('li');
-        // Formatar a data ou ID para exibição
         const displayText = sessionId.startsWith('chat_') ? 
             `Chat ${new Date(parseInt(sessionId.split('_')[1])).toLocaleDateString('pt-BR')}` : 
             `Sessão ${sessionId}`;
@@ -245,4 +250,3 @@ document.addEventListener('DOMContentLoaded', function() {
     sendButton.addEventListener('click', sendMessage);
     loadMessages();
 });
-
