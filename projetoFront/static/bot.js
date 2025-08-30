@@ -73,6 +73,7 @@ function saveMessage(content, sender) {
 function updateChatHistory() {
     chatHistoryList.innerHTML = '';
     const token = localStorage.getItem('token');
+    let sessions = {};
     
     if (token) {
         sessions = JSON.parse(localStorage.getItem('chatSessions') || '{}');
@@ -80,10 +81,9 @@ function updateChatHistory() {
         sessions = JSON.parse(localStorage.getItem('chatSessions') || '{}');
     }
 
-    const sessions = chatSessions[currentUser] || {};
     Object.keys(sessions).forEach(sessionId => {
         const li = document.createElement('li');
-        li.textContent = `Chat ${sessionId}`;
+        li.textContent = `Chat ${sessionId.split('_')[1] || sessionId}`;
         li.onclick = () => loadMessages(sessionId);
         chatHistoryList.appendChild(li);
     });
@@ -226,6 +226,3 @@ document.addEventListener('DOMContentLoaded', function() {
     loadMessages();
 
 });
-
-
-
