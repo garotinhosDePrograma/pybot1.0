@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const nome = form.querySelector('input[placeholder="Name"]').value;
         const email = form.querySelector('input[type="email"]').value;
-        const senha = form.querySelector('input[placeholder="Senha"]').value;
+        const senha = form.querySelector('input[type="password"]').value;
 
         try {
             const response = await fetch("https://pygre.onrender.com/api/cadastro", {
@@ -30,7 +30,4 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error(error);
         }
     });
-
 });
-
-
