@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const senha = form.querySelector('input[placeholder="Senha"]').value;
 
         try {
-            const response = await fetch("http://localhost:5000/api/users", {
+            const response = await fetch("https://pygre.onrender.com/api/users", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -32,3 +32,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 });
+
