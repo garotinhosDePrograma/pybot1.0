@@ -83,7 +83,7 @@ function updateChatHistory() {
 
     Object.keys(sessions).forEach(sessionId => {
         const li = document.createElement('li');
-        li.textContent = `Chat ${sessionId.split('_')[1] || sessionId}`;
+        li.textContent = `Chat ${sessionId}`;
         li.onclick = () => loadMessages(sessionId);
         chatHistoryList.appendChild(li);
     });
@@ -226,3 +226,4 @@ document.addEventListener('DOMContentLoaded', function() {
     loadMessages();
 
 });
+
