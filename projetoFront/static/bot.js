@@ -81,6 +81,7 @@ function updateChatHistory() {
         sessions = JSON.parse(localStorage.getItem('chatSessions') || '{}');
     }
 
+    const sessions = chatSessions[currentUser] || {};
     Object.keys(sessions).forEach(sessionId => {
         const li = document.createElement('li');
         li.textContent = `Chat ${sessionId}`;
@@ -226,4 +227,5 @@ document.addEventListener('DOMContentLoaded', function() {
     loadMessages();
 
 });
+
 
