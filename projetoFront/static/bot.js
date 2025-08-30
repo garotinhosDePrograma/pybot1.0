@@ -101,7 +101,12 @@ function newChat() {
 }
 
 function toggleHistory() {
-    historySidebar.style.display = historySidebar.style.display === 'none' ? 'block' : 'none';
+    if (historySidebar.style.display == 'none') {
+        historySidebar.style.display = 'block';
+        updateChatHistory();
+    } else {
+        historySidebar.style.display = 'none';
+    }
 }
 
 chatInput.addEventListener('input', function() {
@@ -221,3 +226,4 @@ document.addEventListener('DOMContentLoaded', function() {
     loadMessages();
 
 });
+
