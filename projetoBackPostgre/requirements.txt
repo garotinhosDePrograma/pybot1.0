@@ -1,0 +1,14 @@
+gunicorn
+flask
+flask-cors
+mysql-connector-python
+python-dotenv
+pyjwt
+bcrypt
+requests
+langdetect
+deep-translator
+spacy
+scikit-learn
+
+cachetools
