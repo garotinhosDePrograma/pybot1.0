@@ -101,7 +101,7 @@ function newChat() {
 }
 
 function toggleHistory() {
-    if (historySidebar.style.display == 'none') {
+    if (historySidebar.style.display === 'none') {
         historySidebar.style.display = 'block';
         updateChatHistory();
     } else {
@@ -226,4 +226,5 @@ document.addEventListener('DOMContentLoaded', function() {
     loadMessages();
 
 });
+
 
