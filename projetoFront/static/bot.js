@@ -73,7 +73,6 @@ function saveMessage(content, sender) {
 function updateChatHistory() {
     chatHistoryList.innerHTML = '';
     const token = localStorage.getItem('token');
-    let sessions = {};
     
     if (token) {
         sessions = JSON.parse(localStorage.getItem('chatSessions') || '{}');
@@ -227,5 +226,6 @@ document.addEventListener('DOMContentLoaded', function() {
     loadMessages();
 
 });
+
 
 
