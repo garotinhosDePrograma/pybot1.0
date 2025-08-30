@@ -28,7 +28,7 @@ async function fetchUserLogs() {
     try {
         const decoded = JSON.parse(atob(token.split('.')[1]));
         const userId = decoded.user_id;
-        const response = await fetch(`https://pygre.onrender.com/api/logs/${userId}?limite=50`, {
+        const response = await fetch(`https://teste-1-ptn8.onrender.com/api/logs/${userId}?limite=50`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -36,18 +36,20 @@ async function fetchUserLogs() {
             }
         });
         const data = await response.json();
-        if (response.ok) {
+        if (response.ok && data.status === 'success') {
             const sessions = {};
-            data.forEach(log => {
-                const sessionId = log.criado_em.split('T')[0];
+            data.data.forEach(log => {
+                // Ajustar para usar created_at em vez de criado_em
+                const sessionId = log.created_at ? log.created_at.split('T')[0] : 'unknown_' + Date.now();
                 if (!sessions[sessionId]) sessions[sessionId] = [];
-                sessions[sessionId].push({ content: log.pergunta, sender: 'user' });
-                sessions[sessionId].push({ content: log.resposta, sender: 'bot' });
+                sessions[sessionId].push({ content: log.query, sender: 'user' });
+                sessions[sessionId].push({ content: log.response, sender: 'bot' });
             });
             localStorage.setItem('chatSessions', JSON.stringify(sessions));
+            console.log('Sessões salvas:', sessions); // Log para depuração
             loadMessages();
         } else {
-            console.error('Erro ao carregar logs:', data.error);
+            console.error('Erro ao carregar logs:', data.message || data);
         }
     } catch (error) {
         console.error('Erro ao recuperar logs:', error);
@@ -66,25 +68,39 @@ function saveMessage(content, sender) {
         }
         localStorage.setItem('chatSessions', JSON.stringify(allChats));
         localStorage.setItem('currentChatId', currentChatId);
-        updateChatHistory();
+        console.log('Mensagem salva localmente:', { currentChatId, content, sender }); // Log para depuração
     }
+    updateChatHistory();
 }
 
 function updateChatHistory() {
+    if (!chatHistoryList) {
+        console.error('Elemento chatHistoryList não encontrado no DOM');
+        return;
+    }
     chatHistoryList.innerHTML = '';
     const token = localStorage.getItem('token');
-    let sessions = {};
+    let sessions = JSON.parse(localStorage.getItem('chatSessions') || '{}');
     
-    if (token) {
-        sessions = JSON.parse(localStorage.getItem('chatSessions') || '{}');
-    } else {
-        sessions = JSON.parse(localStorage.getItem('chatSessions') || '{}');
+    console.log('Sessões disponíveis:', sessions); // Log para depuração
+    if (Object.keys(sessions).length === 0) {
+        const li = document.createElement('li');
+        li.textContent = 'Nenhum chat disponível';
+        chatHistoryList.appendChild(li);
+        return;
     }
 
     Object.keys(sessions).forEach(sessionId => {
         const li = document.createElement('li');
-        li.textContent = `Chat ${sessionId.split('_')[1] || sessionId}`;
-        li.onclick = () => loadMessages(sessionId);
+        // Formatar a data ou ID para exibição
+        const displayText = sessionId.startsWith('chat_') ? 
+            `Chat ${new Date(parseInt(sessionId.split('_')[1])).toLocaleDateString('pt-BR')}` : 
+            `Sessão ${sessionId}`;
+        li.textContent = displayText;
+        li.onclick = () => {
+            console.log('Carregando sessão:', sessionId); // Log para depuração
+            loadMessages(sessionId);
+        };
         chatHistoryList.appendChild(li);
     });
 }
@@ -101,7 +117,11 @@ function newChat() {
 }
 
 function toggleHistory() {
-    if (historySidebar.style.display === 'none') {
+    if (!historySidebar) {
+        console.error('Elemento historySidebar não encontrado no DOM');
+        return;
+    }
+    if (historySidebar.style.display === 'none' || historySidebar.style.display === '') {
         historySidebar.style.display = 'block';
         updateChatHistory();
     } else {
@@ -141,7 +161,7 @@ async function sendMessage() {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const response = await fetch('https://pygre.onrender.com/api/query', {
+        const response = await fetch('https://teste-1-ptn8.onrender.com/api/query', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({ query: message })
@@ -224,5 +244,4 @@ document.addEventListener('DOMContentLoaded', function() {
     chatInput.focus();
     sendButton.addEventListener('click', sendMessage);
     loadMessages();
-
 });
