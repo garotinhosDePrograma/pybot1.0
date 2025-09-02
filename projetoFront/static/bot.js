@@ -10,11 +10,10 @@ function generateChatId() {
 }
 
 function loadMessages(chatId = null) {
-    // Só exibir mensagem de boas-vindas se não houver chatId
     if (!chatId) {
         chatMessages.innerHTML = '<div class="welcome-message">👋 Olá! Sou o PyBot, seu assistente inteligente. Como posso ajudá-lo hoje?</div>';
     } else {
-        chatMessages.innerHTML = ''; // Limpar mensagens apenas quando carregar um chat específico
+        chatMessages.innerHTML = '';
     }
 
     const token = localStorage.getItem('token');
@@ -51,8 +50,7 @@ async function fetchUserLogs() {
                 sessions[sessionId].push({ content: log.response, sender: 'bot' });
             });
             localStorage.setItem('chatSessions', JSON.stringify(sessions));
-            console.log('Sessões salvas:', sessions); // Log para depuração
-            // Não chamar loadMessages aqui para evitar loop
+            console.log('Sessões salvas:', sessions);
             updateChatHistory();
         } else {
             console.error('Erro ao carregar logs:', data.message || data);
@@ -74,7 +72,7 @@ function saveMessage(content, sender) {
         }
         localStorage.setItem('chatSessions', JSON.stringify(allChats));
         localStorage.setItem('currentChatId', currentChatId);
-        console.log('Mensagem salva localmente:', { currentChatId, content, sender }); // Log para depuração
+        console.log('Mensagem salva localmente:', { currentChatId, content, sender });
     }
     updateChatHistory();
 }
@@ -88,7 +86,7 @@ function updateChatHistory() {
     const token = localStorage.getItem('token');
     let sessions = JSON.parse(localStorage.getItem('chatSessions') || '{}');
     
-    console.log('Sessões disponíveis:', sessions); // Log para depuração
+    console.log('Sessões disponíveis:', sessions);
     if (Object.keys(sessions).length === 0) {
         const li = document.createElement('li');
         li.textContent = 'Nenhum chat disponível';
@@ -103,7 +101,7 @@ function updateChatHistory() {
             `Sessão ${sessionId}`;
         li.textContent = displayText;
         li.onclick = () => {
-            console.log('Carregando sessão:', sessionId); // Log para depuração
+            console.log('Carregando sessão:', sessionId);
             loadMessages(sessionId);
         };
         chatHistoryList.appendChild(li);
