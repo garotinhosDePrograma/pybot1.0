@@ -332,6 +332,7 @@ h1 {
 .success-screen {
     display: none;
     text-align: center;
+    color: white;
 }
 
 .success-icon {
@@ -381,3 +382,4 @@ h1 {
         font-size: 0.8rem;
     }
 }
+
