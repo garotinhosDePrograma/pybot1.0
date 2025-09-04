@@ -8,7 +8,7 @@ gunicorn
 deep-translator
 flask
 flask-cors
-pyscopg-binary
+psycopg2-binary
 googletrans
 langdetect
 requests
