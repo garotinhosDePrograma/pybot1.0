@@ -47,7 +47,7 @@ class BotWorker:
         if not all([self.wolfram_app_id, self.google_cx, self.google_api_key]):
             logger.warning("Algumas chaves de API não estão configuradas")
 
-        self.tokenizer = T5Tokenizer.from_pretrained("t5-small")
+        self.tokenizer = T5Tokenizer.from_pretrained("t5-small", legacy=False)
         self.model = T5ForConditionalGeneration.from_pretrained("t5-small", torch_dtype=torch.float16)
         logger.info("Modelo T5 inicializado com sucesso.")
         logger.info("BotWorker inicializado com sucesso.")
@@ -313,4 +313,5 @@ class BotWorker:
         except Exception as e:
             logger.error(f"Erro ao obter resposta do bot: {str(e)}")
             return "Ocorreu um erro ao processar sua pergunta.", "nenhuma"
+
 
