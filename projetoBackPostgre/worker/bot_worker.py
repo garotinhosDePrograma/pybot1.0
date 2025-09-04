@@ -11,6 +11,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from cachetools import TTLCache
 from config import Config
 from transformers import T5ForConditionalGeneration, T5Tokenizer
+import torch
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ class BotWorker:
             logger.warning("Algumas chaves de API não estão configuradas")
 
         self.tokenizer = T5Tokenizer.from_pretrained("t5-small")
-        self.model = T5ForConditionalGeneration.from_pretrained("t5-small")
+        self.model = T5ForConditionalGeneration.from_pretrained("t5-small", torch_dtype=torch.float16)
         logger.info("Modelo T5 inicializado com sucesso.")
         logger.info("BotWorker inicializado com sucesso.")
 
@@ -312,3 +313,4 @@ class BotWorker:
         except Exception as e:
             logger.error(f"Erro ao obter resposta do bot: {str(e)}")
             return "Ocorreu um erro ao processar sua pergunta.", "nenhuma"
+
