@@ -10,7 +10,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from cachetools import TTLCache
 from config import Config
-from transformers import T5ForConditionalGeneration, T5Tokenizer
+from transformers import BartForConditionalGeneration, BartTokenizer
 import torch
 
 logging.basicConfig(level=logging.INFO)
@@ -47,9 +47,9 @@ class BotWorker:
         if not all([self.wolfram_app_id, self.google_cx, self.google_api_key]):
             logger.warning("Algumas chaves de API não estão configuradas")
 
-        self.tokenizer = T5Tokenizer.from_pretrained("t5-small", legacy=False)
-        self.model = T5ForConditionalGeneration.from_pretrained("t5-small", dtype=torch.float16)
-        logger.info("Modelo T5 inicializado com sucesso.")
+        self.tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
+        self.model = BartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn", dtype=torch.float16)
+        logger.info("Modelo Bart inicializado com sucesso.")
         logger.info("BotWorker inicializado com sucesso.")
 
     def process_query(self, query: str, usuario_id: int = None) -> dict:
@@ -313,6 +313,7 @@ class BotWorker:
         except Exception as e:
             logger.error(f"Erro ao obter resposta do bot: {str(e)}")
             return "Ocorreu um erro ao processar sua pergunta.", "nenhuma"
+
 
 
 
