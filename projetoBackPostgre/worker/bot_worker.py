@@ -9,8 +9,9 @@ import unicodedata
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from cachetools import TTLCache
+import os
 from config import Config
-from transformers import BartForConditionalGeneration, BartTokenizer
+from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
 
 logging.basicConfig(level=logging.INFO)
@@ -47,9 +48,9 @@ class BotWorker:
         if not all([self.wolfram_app_id, self.google_cx, self.google_api_key]):
             logger.warning("Algumas chaves de API não estão configuradas")
 
-        self.tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
-        self.model = BartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn", dtype=torch.float16)
-        logger.info("Modelo Bart inicializado com sucesso.")
+        self.tokenizer = T5Tokenizer.from_pretrained("t5-small")
+        self.model = T5ForConditionalGeneration.from_pretrained("t5-small")
+        logger.info("Modelo T5 inicializado com sucesso.")
         logger.info("BotWorker inicializado com sucesso.")
 
     def process_query(self, query: str, usuario_id: int = None) -> dict:
@@ -97,7 +98,6 @@ class BotWorker:
         palavras_chave = []
         interrogativas = ["por", "como", "o que", "qual", "quem", "onde", "quando"]
 
-        # Preservar a estrutura da pergunta
         for token in doc:
             if token.lemma_ in interrogativas:
                 palavras_chave.append(token.text)
@@ -182,10 +182,21 @@ class BotWorker:
             return ""
 
     def _resposta_util(self, resposta: str, pergunta: str, minimo: int = 10) -> bool:
-        return len(resposta.strip()) >= minimo
+        if not resposta or len(resposta.strip()) < minimo:
+            logger.info(f"Resposta rejeitada por tamanho: {resposta}")
+            return False
+        # Traduzir a resposta para português antes de comparar
+        resposta_traduzida = self._traduzir(resposta, origem="en", destino="pt")
+        vectorizer = TfidfVectorizer()
+        textos = [pergunta.lower(), resposta_traduzida.lower()]
+        tfidf_matrix = vectorizer.fit_transform(textos)
+        similaridade = cosine_similarity(tfidf_matrix[0], tfidf_matrix[1])[0][0]
+        logger.info(f"Similaridade da resposta: {similaridade}")
+        return similaridade > 0.1  # Limiar reduzido para aceitar mais respostas
 
     def _sintetizar_resposta(self, pergunta: str, resposta_api: str, intencao: str) -> str:
         if not resposta_api:
+            logger.info("Nenhuma resposta API disponível, usando resposta padrão.")
             return choice(respostas["desconhecida"])
 
         doc = nlp(pergunta.lower())
@@ -199,20 +210,27 @@ class BotWorker:
         else:
             prompt = f"Summarize: {resposta_api} in response to: {pergunta}"
 
-        inputs = self.tokenizer(prompt, return_tensors="pt", max_lenght=512, truncation=True)
-        outputs = self.model.generate(
-            inputs["input_ids"],
-            max_lenght=100,
-            min_lenght=10,
-            lenght_penalty=1.0,
-            num_beams=4,
-            early_stoping=True
-        )
-        resposta = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        logger.info(f"Prompt para T5: {prompt}")
+        inputs = self.tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
+        try:
+            outputs = self.model.generate(
+                inputs["input_ids"],
+                max_length=200,  # Aumentado para respostas mais completas
+                min_length=10,
+                length_penalty=1.0,
+                num_beams=6,  # Aumentado para melhor qualidade
+                early_stopping=True
+            )
+            resposta = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            logger.info(f"Resposta bruta do T5: {resposta}")
+        except Exception as e:
+            logger.error(f"Erro na geração do T5: {str(e)}")
+            return choice(respostas["desconhecida"])
 
         idioma = self._detectar_idioma(pergunta)
         if idioma != "en":
             resposta = self._traduzir(resposta, origem="en", destino="pt")
+            logger.info(f"Resposta traduzida: {resposta}")
 
         return resposta if resposta.strip() else choice(respostas["desconhecida"])
 
@@ -245,11 +263,13 @@ class BotWorker:
                 logger.info(f"Resposta obtida do cache para: {mensagem_limpa}")
                 return cache[mensagem_limpa], "cache"
 
-            palavras_chave = self._extrair_palavras_chave(mensagem)
-            pergunta_refinada = " ".join(palavras_chave) if palavras_chave else mensagem
+            doc = nlp(mensagem.lower())
+            is_interrogativa = any(token.lemma_ in ["qual", "quem", "onde", "quando", "por", "como"] for token in doc)
+            is_explicativa = any(token.lemma_ in ["por", "como", "explicar"] for token in doc)
+            pergunta_refinada = mensagem if is_interrogativa or len(mensagem.split()) <= 5 else " ".join(self._extrair_palavras_chave(mensagem))
             idioma = self._detectar_idioma(mensagem)
-
             pergunta_en = pergunta_refinada if idioma == "en" else self._traduzir(pergunta_refinada, origem=idioma, destino="en")
+            logger.info(f"Pergunta refinada: {pergunta_refinada}, Traduzida: {pergunta_en}")
 
             fontes = [
                 (self._pesquisar_wolfram, "wolfram"),
@@ -264,26 +284,23 @@ class BotWorker:
                 if self._resposta_util(tentativa, mensagem):
                     respostas_candidatas.append((tentativa, nome))
 
-            # Tentar reformular a pergunta para perguntas explicativas se necessário
-            if not respostas_candidatas:
-                doc = nlp(mensagem.lower())
-                if any(token.lemma_ in ["por", "como"] for token in doc):
-                    pergunta_refinada = f"explain {pergunta_refinada} reason"
-                    pergunta_en = pergunta_refinada if idioma == "en" else self._traduzir(pergunta_refinada, origem=idioma, destino="en")
+            if not respostas_candidatas and is_interrogativa:
+                pergunta_refinada = f"why {pergunta_refinada}" if is_explicativa else pergunta_refinada
+                pergunta_en = pergunta_refinada if idioma == "en" else self._traduzir(pergunta_refinada, origem=idioma, destino="en")
+                logger.info(f"Reformulação: {pergunta_en}")
+                for fonte, nome in fontes:
+                    tentativa = fonte(pergunta_en)
+                    if self._resposta_util(tentativa, mensagem):
+                        respostas_candidatas.append((tentativa, nome))
 
-                    for fonte, nome in fontes:
-                        tentativa = fonte(pergunta_en)
-                        if self._resposta_util(tentativa, mensagem):
-                            respostas_candidatas.append((tentativa, nome))
-
-            # Selecionar a melhor resposta com base na similaridade
             melhor_resposta = ""
             fonte_usada = "nenhuma"
             max_similaridade = 0
             vectorizer = TfidfVectorizer()
 
             for resposta_candidata, nome in respostas_candidatas:
-                textos = [mensagem.lower(), resposta_candidata.lower()]
+                resposta_traduzida = self._traduzir(resposta_candidata, origem="en", destino="pt")
+                textos = [mensagem.lower(), resposta_traduzida.lower()]
                 tfidf_matrix = vectorizer.fit_transform(textos)
                 similaridade = cosine_similarity(tfidf_matrix[0], tfidf_matrix[1])[0][0]
                 if similaridade > max_similaridade:
@@ -313,7 +330,3 @@ class BotWorker:
         except Exception as e:
             logger.error(f"Erro ao obter resposta do bot: {str(e)}")
             return "Ocorreu um erro ao processar sua pergunta.", "nenhuma"
-
-
-
-
