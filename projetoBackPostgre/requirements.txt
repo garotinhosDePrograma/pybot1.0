@@ -1,7 +1,7 @@
-transformers
+transformers==4.56.1
 sentencepiece
 protobuf
-torch @ https://download.pytorch.org/whl/cpu/torch-2.5.1%2Bcpu-cp311-cp311-manylinux1_x86_64.whl
+onnxruntime==1.17.0
 pyjwt
 bcrypt
 scikit-learn
@@ -14,10 +14,7 @@ psycopg2-binary
 googletrans
 langdetect
 requests
-spacy
+spacy==3.8.0
 unidecode
 pt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl#sha256=c304fa04db3af73cd08a250feacf560506e15a2ec2469bd1b09f06847f6b455c
 dotenv
-
-
-
