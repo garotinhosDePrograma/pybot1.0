@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from repository.bot_repository import save_log, get_user_logs, get_all_logs
-from worker.bot_worker import BotWorker
+from worker.bot_worker_test import BotWorker
 from datetime import datetime
 import os
 import jwt
@@ -56,3 +56,4 @@ def get_all_logs_route():
         'data': logs,
         'timestamp': datetime.utcnow().isoformat()
     })
+
