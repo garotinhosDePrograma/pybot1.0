@@ -1,5 +1,7 @@
 transformers
-torch==2.8.0
+sentencepiece
+protobuf
+torch==2.1.2 --index-url https://download.pytorch.org/whl/cpu
 pyjwt
 bcrypt
 scikit-learn
